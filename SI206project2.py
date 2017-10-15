@@ -39,11 +39,11 @@ def find_urls(s):
 ## http://www.michigandaily.com/section/opinion
 
 def grab_headlines():
-    #base_url = 'https://www.michigandaily.com/section/opinion'
-    #r = requests.get(base_url) USE r.text in next line!!
-    filevar = open("opinion.html", 'r')
-    html = filevar.read()
-    soup = BeautifulSoup(html, "lxml")
+    base_url = 'https://www.michigandaily.com/section/opinion'
+    r = requests.get(base_url)
+    #filevar = open("opinion.html", 'r')
+    #html = filevar.read()
+    soup = BeautifulSoup(r.text, "lxml")
 
     headlines = []
     divTag = soup.find_all("div", {"class":"panel-pane pane-mostread"})
@@ -67,8 +67,51 @@ def grab_headlines():
 ## requests.get(base_url, headers={'User-Agent': 'SI_CLASS'})
 
 def get_umsi_data():
-    pass
-    #Your code here
+    base_url = 'https://www.si.umich.edu'
+    end_url = '/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All'
+    r = requests.get(base_url + end_url, headers={'User-Agent': 'SI_CLASS'})
+    soup = BeautifulSoup(r.text, "lxml")
+
+    umsi_titles = {} 
+
+    page_count = 0 
+    
+    while page_count < 13:
+        #create a list of names
+        names = []
+        divTag = soup.find_all("div", {"class":"view-content"})
+        for person in divTag:
+            nameTags = person.find_all("div", {"class":"field field-name-title field-type-ds field-label-hidden"})
+            for tag in nameTags:
+                h2Tags = tag.find_all("h2")
+                for x in h2Tags:
+                    names.extend(x)
+       
+        #create a list of titles
+        titles = []
+        for person in divTag:
+            titleTags = person.find_all("div", {"class":"field field-name-field-person-titles field-type-text field-label-hidden"})
+            for tag in titleTags:
+                divTags2 = tag.find_all("div", {"class":"field-item even"})
+                for x in divTags2:
+                    titles.extend(x)
+        
+        #create dictionary of name:title pairs 
+        counter = 0
+        while counter < len(names):
+            umsi_titles[names[counter]] = titles[counter]
+            counter += 1
+        
+        #create new url to go to next page
+        page_number = "&page="
+        new_end_url = end_url + page_number + str(page_count + 1)
+        r = requests.get(base_url + new_end_url, headers={'User-Agent':'SI_CLASS'})
+        soup = BeautifulSoup(r.text, "lxml")
+        page_count += 1
+
+    return umsi_titles
+    
+
 
 ## PART 3 (b) Define a function called num_students.
 ## INPUT: The dictionary from get_umsi_data().

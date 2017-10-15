@@ -41,8 +41,6 @@ def find_urls(s):
 def grab_headlines():
     base_url = 'https://www.michigandaily.com/section/opinion'
     r = requests.get(base_url)
-    #filevar = open("opinion.html", 'r')
-    #html = filevar.read()
     soup = BeautifulSoup(r.text, "lxml")
 
     headlines = []
@@ -117,8 +115,11 @@ def get_umsi_data():
 ## INPUT: The dictionary from get_umsi_data().
 ## OUTPUT: Return number of PhD students in the data.  (Don't forget, I may change the input data)
 def num_students(data):
-    pass
-    #Your code here
+    total = 0 
+    for key in data:
+        if "PhD student" in str(data[key]):
+            total += 1 
+    return total 
 
 
 
